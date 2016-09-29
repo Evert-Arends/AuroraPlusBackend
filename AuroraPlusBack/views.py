@@ -52,3 +52,13 @@ def post_page(request, name):
             return HttpResponse('No use able POST request.')
     else:
         return HttpResponse('User does not exist')
+
+
+@csrf_exempt
+def post(request):
+    received_json_data = json.loads(request.body)
+    if received_json_data:
+        print received_json_data
+        return HttpResponse('Data inserted')
+    else:
+        return HttpResponse('No post param :D:D:D')
