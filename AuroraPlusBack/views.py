@@ -3,9 +3,13 @@ import base64
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
-
+from collections import namedtuple
+from bin import client
 from .models import Servers
 import json
+
+Client = client.Client()
+
 
 
 # Create your views here.
@@ -59,6 +63,63 @@ def post(request):
     received_json_data = json.loads(request.body)
     if received_json_data:
         print received_json_data
+        # server = Servers(Name=)
+
+        print received_json_data["ServerDetails"]["NetworkLoad"]["Sent"]
+
         return HttpResponse('Data inserted')
     else:
         return HttpResponse('No post param :D:D:D')
+
+
+@csrf_exempt
+def add_client(request):
+    received_json_data = json.loads(request.body)
+    if not received_json_data:
+        return HttpResponse('404 - No json object found in body.')
+
+    action = received_json_data["Server"]["Action"]["Register"]
+    if not action:
+        return HttpResponse('No action found in json body.', status=400)
+    if action == 'True':
+        print 'Registering server.'
+    # LOAD ALL THE JSON IN TO THE NAMEDTUPLE
+
+    server_data = namedtuple('ServerData', 'Name Key CPU_Usage Network_Sent Network_Received Action')
+
+    server_name = received_json_data["Server"]["ServerDetails"]["ServerName"]
+    server_key = received_json_data["Server"]["ServerDetails"]["ServerKey"]
+    cpu = received_json_data["Server"]["ServerDetails"]["CPU_Usage"]
+    network_sent = received_json_data["Server"]["ServerDetails"]["NetworkLoad"]["Sent"]
+    network_received = received_json_data["Server"]["ServerDetails"]["NetworkLoad"]["Received"]
+
+    server = server_data(server_name, server_key, cpu, network_sent, network_received, action)
+
+    print server.Network_Received
+
+    return HttpResponse(server)
+
+
+@csrf_exempt
+def update_client(request):
+    json_body = json.loads(request.body)
+    if not json_body:
+        return HttpResponse('No json object found in body.', status=400)
+
+    server_data = namedtuple('ServerData', 'Name Key CPU_Usage Network_Sent Network_Received Action')
+
+    server_name = json_body["Server"]["ServerDetails"]["ServerName"]
+    server_key = json_body["Server"]["ServerDetails"]["ServerKey"]
+    cpu = json_body["Server"]["ServerDetails"]["CPU_Usage"]
+    network_sent = json_body["Server"]["ServerDetails"]["NetworkLoad"]["Sent"]
+    network_received = json_body["Server"]["ServerDetails"]["NetworkLoad"]["Received"]
+
+    action = json_body["Server"]["Action"]["Register"]
+    if not action:
+        return HttpResponse('No action found in json body.', status=400)
+    if action == 'True':
+        return HttpResponse('You are at the wrong page, moron.', status=400)
+
+    server = server_data(server_name, server_key, cpu, network_sent, network_received, action)
+
+
