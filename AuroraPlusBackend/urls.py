@@ -27,4 +27,6 @@ urlpatterns = [
     url(r'^data/(?P<name>\w{1,50})$', csrf_exempt(views.post_page), name='user'),
     url(r'^post/', views.post),
     url(r'^add_client/', views.add_client),
+    url(r'^update_client/', views.update_client),
+
 ]

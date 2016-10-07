@@ -8,7 +8,8 @@ class Client:
     def register_client(self):
         pass
 
-    def update_client(self):
+    def update_client(self, ):
+        data_tuple
         pass
 
 

@@ -122,4 +122,5 @@ def update_client(request):
 
     server = server_data(server_name, server_key, cpu, network_sent, network_received, action)
 
+    print server._asdict()
 
