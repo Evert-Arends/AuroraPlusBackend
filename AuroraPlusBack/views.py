@@ -121,6 +121,8 @@ def update_client(request):
         return HttpResponse('You are at the wrong page, moron.', status=400)
 
     server = server_data(server_name, server_key, cpu, network_sent, network_received, action)
+    ordered_dict = server._asdict()
 
-    print server._asdict()
+    Client.update_client(ordered_dict)
 
+    return HttpResponse(ordered_dict, status=200)
