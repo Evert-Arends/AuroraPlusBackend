@@ -1,5 +1,6 @@
+from __future__ import print_function
 from collections import namedtuple
-from AuroraPlusBack.models import Servers
+from AuroraPlusBack.models import Servers, ServerData
 
 
 class Client:
@@ -15,9 +16,25 @@ class Client:
         client_cpu = server_dict["CPU_Usage"]
         client_network_sent = server_dict["Network_Sent"]
         client_network_received = server_dict["Network_Received"]
-        print client_name, client_key, client_cpu, client_network_received, client_network_sent
+        print(client_name, client_key, client_cpu, client_network_received, client_network_sent)
 
-        client_obj = Servers.objects.get(Server_Key=str(client_key))
+        client_server_obj = Servers.objects.get(Server_Key=str(client_key))
+        if not client_server_obj:
+            return False
 
+        client_data_obj = None
+
+        try:
+            client_data_obj = ServerData.objects.get(Server_Key=client_key)
+        except client_data_obj.DoesNotExist:
+            return False
+
+        client_data_obj.CPU_Usage = client_cpu
+        client_data_obj.NetworkLoad_Sent = client_network_sent
+        client_data_obj.NetworkLoad_Received = client_network_received
+
+        client_data_obj.save()
+
+        return True
 
 

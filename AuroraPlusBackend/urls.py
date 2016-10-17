@@ -28,5 +28,5 @@ urlpatterns = [
     url(r'^post/', views.post),
     url(r'^add_client/', views.add_client),
     url(r'^update_client/', views.update_client),
-
+    url(r'^client_details/(?P<client_key>\w{1,50})$', views.client_details, name='user'),
 ]

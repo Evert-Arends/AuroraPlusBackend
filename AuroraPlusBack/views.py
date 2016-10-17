@@ -1,3 +1,4 @@
+from __future__ import print_function
 import base64
 
 from django.http import HttpResponse
@@ -5,14 +6,13 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from collections import namedtuple
 from bin import client
-from .models import Servers
+from AuroraPlusBack.models import Servers, ServerData
 import json
 
 Client = client.Client()
-
-
-
 # Create your views here.
+
+
 def index(request):
     t = request.get_full_path()
     ok = "hey {0} ".format(t)
@@ -20,7 +20,7 @@ def index(request):
 
 
 def profile_page(request, username):
-    print username
+    print(username)
 
     if Servers.objects.filter(Name=username):
         serverObj = Servers.objects.get(Name=username)
@@ -62,10 +62,10 @@ def post_page(request, name):
 def post(request):
     received_json_data = json.loads(request.body)
     if received_json_data:
-        print received_json_data
+        print(received_json_data)
         # server = Servers(Name=)
 
-        print received_json_data["ServerDetails"]["NetworkLoad"]["Sent"]
+        print(received_json_data["ServerDetails"]["NetworkLoad"]["Sent"])
 
         return HttpResponse('Data inserted')
     else:
@@ -82,7 +82,7 @@ def add_client(request):
     if not action:
         return HttpResponse('No action found in json body.', status=400)
     if action == 'True':
-        print 'Registering server.'
+        print('Registering server.')
     # LOAD ALL THE JSON IN TO THE NAMEDTUPLE
 
     server_data = namedtuple('ServerData', 'Name Key CPU_Usage Network_Sent Network_Received Action')
@@ -95,7 +95,7 @@ def add_client(request):
 
     server = server_data(server_name, server_key, cpu, network_sent, network_received, action)
 
-    print server.Network_Received
+    print(server.Network_Received)
 
     return HttpResponse(server)
 
@@ -123,6 +123,29 @@ def update_client(request):
     server = server_data(server_name, server_key, cpu, network_sent, network_received, action)
     ordered_dict = server._asdict()
 
-    Client.update_client(ordered_dict)
+    update = Client.update_client(ordered_dict)
 
-    return HttpResponse(ordered_dict, status=200)
+    if update:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=400)
+
+
+def client_details(request, client_key):
+    print(client_key)
+    Server_obj = ''
+
+    try:
+        Server_obj = Servers.objects.filter(Server_Key=client_key)
+    except Server_obj.DoesNotExist:
+        return False
+
+    if not Server_obj:
+        return HttpResponse('Test')
+
+    try:
+        Server_data_obj = ServerData.objects.get(Server_Key=client_key)
+    except ServerData.DoesNotExist:
+        return False
+
+    return HttpResponse(Server_data_obj.Data)
