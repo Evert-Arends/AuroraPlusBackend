@@ -131,21 +131,34 @@ def update_client(request):
         return HttpResponse(status=400)
 
 
+@csrf_exempt
+def save_data(request):
+    json_body = json.loads(request.body)
+    if not json_body:
+        return HttpResponse('No json object found in body.', status=400)
+
+    save_client = Client.save_client(json_blob=json_body)
+    if save_client:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=400)
+
+
 def client_details(request, client_key):
     print(client_key)
     Server_obj = ''
 
     try:
-        Server_obj = Servers.objects.filter(Server_Key=client_key)
+        Server_obj = Servers.objects.filter(ServerKey=client_key)
     except Server_obj.DoesNotExist:
-        return False
+        return HttpResponse('Fail.')
 
     if not Server_obj:
-        return HttpResponse('Test')
+        return HttpResponse('Fail.')
 
     try:
-        Server_data_obj = ServerData.objects.get(Server_Key=client_key)
+        Server_data_obj = ServerData.objects.filter(ServerKey=client_key).last()
     except ServerData.DoesNotExist:
         return False
 
-    return HttpResponse(Server_data_obj.Data)
+    return HttpResponse(Server_data_obj.JsonData)

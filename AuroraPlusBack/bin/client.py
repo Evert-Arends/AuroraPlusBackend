@@ -1,6 +1,7 @@
 from __future__ import print_function
 from collections import namedtuple
 from AuroraPlusBack.models import Servers, ServerData
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class Client:
@@ -18,14 +19,14 @@ class Client:
         client_network_received = server_dict["Network_Received"]
         print(client_name, client_key, client_cpu, client_network_received, client_network_sent)
 
-        client_server_obj = Servers.objects.get(Server_Key=str(client_key))
+        client_server_obj = Servers.objects.get(ServerKey=str(client_key))
         if not client_server_obj:
             return False
 
         client_data_obj = None
 
         try:
-            client_data_obj = ServerData.objects.get(Server_Key=client_key)
+            client_data_obj = ServerData.objects.get(ServerKey=client_key)
         except client_data_obj.DoesNotExist:
             return False
 
@@ -37,4 +38,31 @@ class Client:
 
         return True
 
+    def save_client(self, json_blob):
+        if not json_blob:
+            print('No json blob found.')
+            return
+
+        server_key = json_blob["Server"]["ServerDetails"]["ServerKey"]
+        if not server_key:
+            print('No ServerKey specified.')
+            return
+
+        try:
+            client_details_obj = Servers.objects.get(ServerKey=server_key)
+        except ObjectDoesNotExist:
+            print('No object found.')
+            return
+
+        client_id = client_details_obj.Name
+
+        if not client_id:
+            print('No client with this name.')
+            return
+
+        new_entry = ServerData(JsonData=json_blob, ServerKey=server_key)
+        new_entry.save()
+
+        print('New entry for: {0}'.format(client_details_obj.Name))
+        return True
 
