@@ -1,6 +1,7 @@
 from __future__ import print_function
 import base64
 
+import datetime
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -144,9 +145,11 @@ def save_data(request):
         return HttpResponse(status=400)
 
 
-def client_details(request, client_key):
+def client_details(request, client_key, time_test=0):
     print(client_key)
     Server_obj = ''
+    print (time_test)
+    time_test = int(time_test)
 
     try:
         Server_obj = Servers.objects.filter(ServerKey=client_key)
@@ -157,8 +160,17 @@ def client_details(request, client_key):
         return HttpResponse('Fail.')
 
     try:
-        Server_data_obj = ServerData.objects.filter(ServerKey=client_key).last()
+        if time_test == 0:
+            Server_data_obj = ServerData.objects.filter(ServerKey=client_key).last()
+        else:
+            date_now = datetime.datetime.now()
+            old_date = date_now - datetime.timedelta(seconds=time_test)
+            test = 'old_date: {0}', 'date_now: {1}'.format(old_date, date_now)
+            print (test)
+            Server_data_obj = ServerData.objects.filter(ServerKey=client_key, Date__range=(old_date, date_now))
     except ServerData.DoesNotExist:
         return False
-
-    return HttpResponse(Server_data_obj.JsonData)
+    items = []
+    for item in Server_data_obj:
+        items.append(item.JsonData)
+    return HttpResponse(items)

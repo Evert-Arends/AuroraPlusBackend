@@ -14,7 +14,7 @@ class ServerData(models.Model):
     ID = models.AutoField(primary_key=True)
     JsonData = models.TextField()
     ServerKey = models.TextField(max_length=200, default=0)
-    Date = models.DateTimeField(auto_now_add=True)
-
+    InsertDate = models.DateTimeField(auto_now_add=True)
+    RequestDate = models.DateTimeField()
 
 
