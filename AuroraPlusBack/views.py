@@ -2,21 +2,31 @@ from __future__ import print_function
 import base64
 
 import datetime
+import os
+
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from collections import namedtuple
 from bin import client
+from settings import constants as cfg
 from AuroraPlusBack.models import Servers, ServerData
 import json
 
 Client = client.Client()
+
+
 # Create your views here.
 
 
 def index(request):
-    t = request.get_full_path()
-    ok = "hey {0} ".format(t)
+    version = cfg.VERSION
+    hostname = cfg.HOSTNAME
+
+    ok = "Hello and welcome to the AuroraPlus API, I have some information for you: \r\n" \
+         "Version: {0} \r\n" \
+         "Hostname: {1} \r\n".format(version, hostname)
+
     return HttpResponse(ok, request)
 
 
@@ -107,13 +117,14 @@ def update_client(request):
     if not json_body:
         return HttpResponse('No json object found in body.', status=400)
 
-    server_data = namedtuple('ServerData', 'Name Key CPU_Usage Network_Sent Network_Received Action')
+    server_data = namedtuple('ServerData', 'Name Key CPU_Usage Network_Sent Network_Received Action Request_Date_Time')
 
     server_name = json_body["Server"]["ServerDetails"]["ServerName"]
     server_key = json_body["Server"]["ServerDetails"]["ServerKey"]
     cpu = json_body["Server"]["ServerDetails"]["CPU_Usage"]
     network_sent = json_body["Server"]["ServerDetails"]["NetworkLoad"]["Sent"]
     network_received = json_body["Server"]["ServerDetails"]["NetworkLoad"]["Received"]
+    request_date_time = json_body["RequestDetails"]["Time"]["RequestSent"]
 
     action = json_body["Server"]["Action"]["Register"]
     if not action:
@@ -145,32 +156,44 @@ def save_data(request):
         return HttpResponse(status=400)
 
 
-def client_details(request, client_key, time_test=0):
+def client_details(request, client_key, time=0):
     print(client_key)
-    Server_obj = ''
-    print (time_test)
-    time_test = int(time_test)
+    server_obj = ''
+    print(time)
+    time = int(time)
 
     try:
-        Server_obj = Servers.objects.filter(ServerKey=client_key)
-    except Server_obj.DoesNotExist:
+        server_obj = Servers.objects.filter(ServerKey=client_key)
+    except server_obj.DoesNotExist:
         return HttpResponse('Fail.')
 
-    if not Server_obj:
+    if not server_obj:
         return HttpResponse('Fail.')
 
     try:
-        if time_test == 0:
-            Server_data_obj = ServerData.objects.filter(ServerKey=client_key).last()
+        if time == 0:
+            server_data_obj = ServerData.objects.filter(ServerKey=client_key).last()
         else:
             date_now = datetime.datetime.now()
-            old_date = date_now - datetime.timedelta(seconds=time_test)
+            old_date = date_now - datetime.timedelta(seconds=time)
             test = 'old_date: {0}', 'date_now: {1}'.format(old_date, date_now)
-            print (test)
-            Server_data_obj = ServerData.objects.filter(ServerKey=client_key, Date__range=(old_date, date_now))
+            print(test)
+            server_data_obj = ServerData.objects.filter(ServerKey=client_key, RequestDate__range=(old_date, date_now))
     except ServerData.DoesNotExist:
         return False
     items = []
-    for item in Server_data_obj:
-        items.append(item.JsonData)
-    return HttpResponse(items)
+    if server_data_obj and time != 0:
+        for item in server_data_obj:
+            items.append(item.JsonData)
+
+        json_blob = json.dumps(items)
+        return HttpResponse(json_blob)
+
+    if server_data_obj:
+        item = server_data_obj.JsonData
+        json_blob = json.dumps(item)
+
+        return HttpResponse(json_blob)
+    return HttpResponse(status=400)
+
+
