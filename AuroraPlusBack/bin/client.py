@@ -1,5 +1,10 @@
 from __future__ import print_function
+
+import json
 from collections import namedtuple
+
+import datetime
+
 from AuroraPlusBack.models import Servers, ServerData
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -65,7 +70,6 @@ class Client:
             print('No client with this name.')
             return
 
-        new_entry = ServerData(JsonData=json_blob, ServerKey=server_key, RequestDate=request_date)
         json_blob = json.dumps(json_blob)
         new_entry = ServerData(JsonData=json_blob, ServerKey=server_key, RequestDate=datetime.datetime.now())
         new_entry.save()
