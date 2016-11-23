@@ -51,7 +51,6 @@ class Client:
             print('No json blob found.')
             return
 
-        json_blob = json.loads(json_blob)
         server_key = json_blob["Server"]["ServerDetails"]["ServerKey"]
         request_date = json_blob["RequestDetails"]["Time"]["RequestSent"]
         if not server_key:
