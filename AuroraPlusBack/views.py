@@ -190,10 +190,13 @@ def client_details(request, client_key, time=0):
         return HttpResponse(json_blob)
 
     if server_data_obj:
-        item = server_data_obj.JsonData
-        json_blob = json.dumps(item)
+        # item = server_data_obj.JsonData
+        # json_blob = json.loads(item)
+        for item in server_data_obj.JsonData:
+            print (item)
+            items.append(item)
 
-        return HttpResponse(json_blob)
+        return HttpResponse(items)
     return HttpResponse(status=400)
 
 
