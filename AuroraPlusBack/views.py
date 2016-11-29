@@ -193,7 +193,6 @@ def client_details(request, client_key, time=0):
         # item = server_data_obj.JsonData
         # json_blob = json.loads(item)
         for item in server_data_obj.JsonData:
-            print (item)
             items.append(item)
 
         return HttpResponse(items)
