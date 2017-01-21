@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^post/', views.post),
     url(r'^add_client/', views.add_client),
     url(r'^update_client/', views.save_data),
+    url(r'^check_client_key/', views.verify_key),
     url(r'^client_details/(?P<client_key>\w{1,50})/$', views.client_details, name='user'),
     url(r'^client_details/(?P<client_key>\w{1,50})/time/(?P<time>\w{1,50})/$', views.client_details, name='user'),
 ]

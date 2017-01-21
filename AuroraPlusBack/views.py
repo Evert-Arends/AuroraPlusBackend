@@ -8,13 +8,13 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from collections import namedtuple
-from bin import client
+from bin import client, encode
 from settings import constants as cfg
 from AuroraPlusBack.models import Servers, ServerData
 import json
 
 Client = client.Client()
-
+EncodingHandler = encode.EncodingHandler()
 
 # Create your views here.
 
@@ -144,6 +144,20 @@ def update_client(request):
 
 
 @csrf_exempt
+def verify_key(request):
+    json_body = json.loads(request.body)
+    if not json_body:
+        return HttpResponse('404 - No json object found in body.')
+    key = EncodingHandler.decode(json_body[1], 'base64')
+    print (key)
+    client_data_obj = Servers.objects.filter(ServerKey=key)
+    print (client_data_obj)
+    if not client_data_obj:
+        return HttpResponse(status=204)
+    return HttpResponse(status=400)
+
+
+@csrf_exempt
 def save_data(request):
     json_body = json.loads(request.body)
     if not json_body:
@@ -190,10 +204,12 @@ def client_details(request, client_key, time=0):
         return HttpResponse(json_blob)
 
     if server_data_obj:
-        item = server_data_obj.JsonData
-        json_blob = json.dumps(item)
+        # item = server_data_obj.JsonData
+        # json_blob = json.loads(item)
+        for item in server_data_obj.JsonData:
+            items.append(item)
 
-        return HttpResponse(json_blob)
+        return HttpResponse(items)
     return HttpResponse(status=400)
 
 
