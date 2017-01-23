@@ -96,9 +96,10 @@ def add_client(request):
     server_name = received_json_data["Server"]["ServerDetails"]["ServerName"]
     server_key = received_json_data["Server"]["ServerDetails"]["ServerKey"]
 
-    if server_name and server_key:
-        server = Servers(Name=server_name, ServerKey=server_key)
-        server.save()
+    if server_name:
+        if server_key:
+            server = Servers(Name=server_name, ServerKey=server_key)
+            server.save()
     return HttpResponse(status=200)
 
 
