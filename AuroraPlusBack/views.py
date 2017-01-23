@@ -11,6 +11,7 @@ from collections import namedtuple
 from bin import client, encode
 from settings import constants as cfg
 from AuroraPlusBack.models import Servers, ServerData
+from pprint import pprint
 import json
 
 Client = client.Client()
@@ -85,30 +86,20 @@ def post(request):
 
 @csrf_exempt
 def add_client(request):
-    received_json_data = json.loads(request.body)
+    received_json_data = json.loads(json.loads(request.body))
     if not received_json_data:
         return HttpResponse('404 - No json object found in body.')
-
-    action = received_json_data["Server"]["Action"]["Register"]
-    if not action:
-        return HttpResponse('No action found in json body.', status=400)
-    if action == 'True':
-        print('Registering server.')
-    # LOAD ALL THE JSON IN TO THE NAMEDTUPLE
-
-    server_data = namedtuple('ServerData', 'Name Key CPU_Usage Network_Sent Network_Received Action')
-
+    pprint(received_json_data)
+    print (type(received_json_data))
+    # received_json_data = json.load(received_json_data)
+    # print (received_json_data)
     server_name = received_json_data["Server"]["ServerDetails"]["ServerName"]
     server_key = received_json_data["Server"]["ServerDetails"]["ServerKey"]
-    cpu = received_json_data["Server"]["ServerDetails"]["CPU_Usage"]
-    network_sent = received_json_data["Server"]["ServerDetails"]["NetworkLoad"]["Sent"]
-    network_received = received_json_data["Server"]["ServerDetails"]["NetworkLoad"]["Received"]
 
-    server = server_data(server_name, server_key, cpu, network_sent, network_received, action)
-
-    print(server.Network_Received)
-
-    return HttpResponse(server)
+    if server_name and server_key:
+        server = Servers(Name=server_name, ServerKey=server_key)
+        server.save()
+    return HttpResponse(status=200)
 
 
 @csrf_exempt
@@ -171,9 +162,8 @@ def save_data(request):
 
 
 def client_details(request, client_key, time=0):
-    print(client_key)
+    # print(client_key)
     server_obj = ''
-    print(time)
     time = int(time)
 
     try:
