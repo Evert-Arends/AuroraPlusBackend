@@ -137,12 +137,13 @@ def update_client(request):
 @csrf_exempt
 def verify_key(request):
     json_body = json.loads(request.body)
+    print (json_body)
     if not json_body:
         return HttpResponse('404 - No json object found in body.')
-    key = EncodingHandler.decode(json_body[1], 'base64')
+    key = json_body
+    key = EncodingHandler.decode(key, 'base64')
     print (key)
-    client_data_obj = Servers.objects.filter(ServerKey=key)
-    print (client_data_obj)
+    client_data_obj = Servers.objects.filter(ServerKey=key).exists()
     if not client_data_obj:
         return HttpResponse(status=204)
     return HttpResponse(status=400)
